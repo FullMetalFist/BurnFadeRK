@@ -31,7 +31,7 @@ struct BurningSphereView: View {
         self.device = MTLCreateSystemDefaultDevice()!
         self.commandQueue = device.makeCommandQueue()!
         let library = device.makeDefaultLibrary()!
-        let function = library.makeFunction(name: "burnFadeVertices")!
+        let function = library.makeFunction(name: "BurnFadeVertices")!
         self.computePipeline = try! device.makeComputePipelineState(function: function)
     }
     
@@ -48,6 +48,45 @@ struct BurningSphereView: View {
                 
                 storeOriginalVertices(from: mesh)
             }
+            .onChange(of: burnSettings) { _, _ in
+                updateMesh()
+            }
+            
+            VStack {
+                HStack {
+                    Text("Burn Amount: \(burnSettings.burnAmount, specifier: "%.2f")")
+                    Spacer()
+                    Slider(value: $burnSettings.burnAmount, in: 0...1)
+                        .frame(width: 300)
+                }
+                HStack {
+                    Text("Burn Scale: \(burnSettings.burnScale, specifier: "%.2f")")
+                    Spacer()
+                    Slider(value: $burnSettings.burnScale, in: 1...40)
+                        .frame(width: 300)
+                }
+                HStack {
+                    Text("Burn Hue: \(burnSettings.hueRotate, specifier: "%.2f")")
+                    Spacer()
+                    Slider(value: $burnSettings.hueRotate, in: 0...(.pi*2))
+                        .frame(width: 300)
+                }
+                HStack {
+                    Text("Edge Width: \(burnSettings.edgeWidth, specifier: "%.3f")")
+                    Spacer()
+                    Slider(value: $burnSettings.edgeWidth, in: 0.01...0.2)
+                        .frame(width: 300)
+                }
+                HStack {
+                    Text("Ember Range: \(burnSettings.emberRange, specifier: "%.3f")")
+                    Spacer()
+                    Slider(value: $burnSettings.emberRange, in: 0.05...0.4)
+                        .frame(width: 300)
+                }
+            }
+            .frame(width: 500)
+            .padding()
+//            .glassBackgroundEffect()
         }
     }
     
@@ -108,10 +147,10 @@ struct BurningSphereView: View {
 
 extension BurningSphereView {
     func loadMaterial() async throws -> ShaderGraphMaterial {
-        let baseURL = URL(string: "https://matt54.github.io/Resources/")!
-        let fullURL = baseURL.appendingPathComponent("TextureCoordinatesColorMaterial.usda")
+        let baseURL = URL(string: "https://github.com/FullMetalFist/BurnFadeRK/blob/main/BurnFadeRK/")!
+        let fullURL = baseURL.appendingPathComponent("Scene.usda")
         let data = try Data(contentsOf: fullURL)
-        let materialFilenameWithPath: String = "/Root/TextureCoordinateColorMaterial"
+        let materialFilenameWithPath: String = "/Root/Scene"
         return try await ShaderGraphMaterial(named: materialFilenameWithPath, from: data)
     }
 }
